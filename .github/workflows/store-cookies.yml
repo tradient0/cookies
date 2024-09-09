@@ -2,8 +2,8 @@ name: Selenium Cookies Extractor
 
 on:
   workflow_dispatch:  # Manual trigger via a button
-  schedule:           # Auto trigger every 4 hours
-    - cron: '0 */4 * * *'
+  schedule:           # Auto trigger every hour
+    - cron: '0 * * * *'
 
 
 jobs:
