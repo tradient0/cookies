@@ -1,0 +1,64 @@
+name: Selenium Cookies Extractor
+
+on:
+  workflow_dispatch:  # Manual trigger via a button
+  schedule:           # Auto trigger every 4 hours
+    - cron: '0 */4 * * *'
+
+
+jobs:
+  run-selenium-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install selenium
+
+      - name: Set Up ChromeDriver
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y unzip xvfb libxi6 libgconf-2-4
+          # Copy the ChromeDriver from the repo to the appropriate location
+          sudo cp chrome/chromedriver /usr/local/bin/chromedriver
+          sudo chmod +x /usr/local/bin/chromedriver
+
+      - name: Run Selenium Script
+        env:
+          DISPLAY: ':99.0'
+        run: |
+          sudo Xvfb :99 -ac &
+          python script/selenium_script.py > cookies_output.txt
+
+      - name: Save Cookies to File
+        run: |
+          # Create a directory to store the cookies file
+          mkdir -p cookies
+          
+          # Move the cookies output to the cookies directory
+          mv cookies_output.txt cookies/NSE_COOKIES.txt
+
+      - name: Commit and Push Cookies File
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # GitHub token to authenticate the push
+        run: |
+          # Configure Git with GitHub Actions bot's details
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+          # Add the cookies file to the repository
+          git add cookies/NSE_COOKIES.txt
+          
+          # Commit the changes
+          git commit -m "Update NSE_COOKIES.txt with the latest cookies"
+
+          # Push the changes to the repository
+          git push origin ${{ github.ref }}
