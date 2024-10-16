@@ -5,7 +5,6 @@ on:
   schedule:           # Auto trigger every hour
     - cron: '0 * * * *'
 
-
 jobs:
   run-selenium-script:
     runs-on: ubuntu-latest
@@ -26,7 +25,7 @@ jobs:
       - name: Set Up ChromeDriver
         run: |
           sudo apt-get update
-          sudo apt-get install -y unzip xvfb libxi6 libgconf-2-4
+          sudo apt-get install -y unzip xvfb libxi6
           # Copy the ChromeDriver from the repo to the appropriate location
           sudo cp chrome/chromedriver /usr/local/bin/chromedriver
           sudo chmod +x /usr/local/bin/chromedriver
@@ -35,7 +34,7 @@ jobs:
         env:
           DISPLAY: ':99.0'
         run: |
-          sudo Xvfb :99 -ac &
+          sudo Xvfb :99 -ac & 
           python script/selenium_script.py > cookies_output.txt
 
       - name: Save Cookies to File
